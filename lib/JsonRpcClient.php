@@ -1,6 +1,8 @@
 <?php
 
-class JsonRpcFault extends Exception {}
+namespace WHMCS\Modules\Registrar\Metaname;
+
+use WHMCS\Modules\Registrar\Metaname\Exception\JsonRpcFault;
 
 class JsonRpcClient
 {
@@ -42,25 +44,26 @@ class JsonRpcClient
         ));
         $jsonResponse = file_get_contents($this->uri, false, $ctx);
 
-        if ($jsonResponse === false)
+        if ($jsonResponse === false) {
             throw new JsonRpcFault('file_get_contents failed', -32603);
+        }
 
         $response = json_decode($jsonResponse);
 
-        if ($response === null)
+        if ($response === null) {
             throw new JsonRpcFault('JSON cannot be decoded', -32603);
+        }
 
-        if ($response->id != $id)
+        if ($response->id != $id) {
             throw new JsonRpcFault('Mismatched JSON-RPC IDs', -32603);
+        }
 
-        if (property_exists($response, 'error'))
+        if (property_exists($response, 'error')) {
             throw new JsonRpcFault($response->error->message, $response->error->code);
-
-        else if (property_exists($response, 'result'))
+        } elseif (property_exists($response, 'result')) {
             return $response->result;
-        else
+        } else {
             throw new JsonRpcFault('Invalid JSON-RPC response', -32603);
+        }
     }
 }
-
-?>
