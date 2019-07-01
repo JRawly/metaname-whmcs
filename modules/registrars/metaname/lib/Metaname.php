@@ -232,7 +232,7 @@ EOF;
 
     protected function log($stuff)
     {
-        $f = fopen(sys_get_temp_dir() . DIRECTORY_SEPARATOR . '/metaname-module.log', 'a');
+        $f = fopen(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'metaname-module.log', 'a');
 
         if (is_subclass_of($stuff, 'Exception')) {
             $e = $stuff;

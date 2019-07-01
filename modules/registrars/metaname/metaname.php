@@ -58,7 +58,7 @@ function metaname_TransferDomain(array $params)
           $metaname->import_other_domain_name($domain_name, $metaname->specified_contacts());
         }
     } catch (JsonRpcFault $e) {
-        return $metaname->handle_fault($e, array(-4,-6,-8,-15,));
+        return $metaname->handle_fault($e, array(-4, -6, -8, -15,));
     }
 }
 
@@ -71,7 +71,7 @@ function metaname_RenewDomain(array $params)
         $metaname->renew_domain_name($domain_name, $term_in_months);
         return array('info' => "$domain_name has been renewed for $term_in_months months");
     } catch (JsonRpcFault $e) {
-        return $metaname->handle_fault($e, array(-4,-5,-11,));
+        return $metaname->handle_fault($e, array(-4, -5, -11,));
     }
 }
 
@@ -94,13 +94,13 @@ function metaname_GetNameservers(array $params)
 
 function metaname_SaveNameservers(array $params)
 {
-  $metaname = new Metaname($params);
-  try {
-      $metaname->update_name_servers($metaname->specified_domain_name(), $metaname->specified_name_servers());
-      return null;
-  } catch (JsonRpcFault $e) {
-      return $metaname->handle_fault($e, array(-4,-5,-9,-13));
-  }
+    $metaname = new Metaname($params);
+    try {
+        $metaname->update_name_servers($metaname->specified_domain_name(), $metaname->specified_name_servers());
+        return null;
+    } catch (JsonRpcFault $e) {
+        return $metaname->handle_fault($e, array(-4, -5, -9, -13));
+    }
 }
 
 function metaname_GetContactDetails(array $params)
@@ -126,11 +126,11 @@ function metaname_SaveContactDetails(array $params)
         'registrant' => $metaname->encoded_contact('Registrant'),
         'admin' => $metaname->encoded_contact('Admin'),
         'technical'  => $metaname->encoded_contact('Tech'),
-   );
+    );
     try {
         $metaname->update_contacts($metaname->specified_domain_name(), $contacts);
     } catch (JsonRpcFault $e) {
-        return $metaname->handle_fault($e, array(-4,-5,-6,-8,));
+        return $metaname->handle_fault($e, array(-4, -5, -6, -8,));
     }
 }
 
@@ -163,7 +163,7 @@ function metaname_SaveRegistrarLock(array $params)
         # should be invoked only for domain names in the reseller's portfolio.
         # Error -18 is a system error anyway and is translated to the generic
         # system error
-        return $metaname->handle_fault($e, array(-5,-19));
+        return $metaname->handle_fault($e, array(-5, -19));
     }
 }
 
@@ -209,7 +209,7 @@ function metaname_SaveDNS(array $params)
         $metaname->configure_zone($metaname->specified_domain_name(), $records, null);
         return null;
     } catch (JsonRpcFault $e) {
-        return $metaname->handle_fault($e, array(-5,-12,-16,-17));
+        return $metaname->handle_fault($e, array(-5, -12, -16, -17));
     }
 }
 
@@ -228,3 +228,43 @@ function metaname_GetEPPCode(array $params)
     }
 }
 
+function metaname_Sync(array $params, $transfer = false)
+{
+    $metaname = new Metaname($params);
+    try {
+        $params = injectDomainObjectIfNecessary($params);
+        $domainInformation = $metaname->domain_name($params['domainObj']->getDomain());
+        $status = $domainInformation->status;
+        if ($status == 'Transferring' && $transfer) {
+            return [
+                'inprogress' => true,
+            ];
+        }
+        $expiryDate = $domainInformation->when_paid_up_to;
+        $expiryDate = explode('T', $expiryDate)[0];
+        $returnData = [];
+        $returnData['expirydate'] = $expiryDate;
+        if (in_array($status, ['Active', 'Locked'])) {
+            $returnData['active'] = true;
+        } elseif ($status == 'PendingRelease') {
+            $returnData['expired'] = true;
+        }
+        return $returnData;
+    } catch (JsonRpcFault $e) {
+        if ($e->getCode() == -5) {
+            $key = 'expired';
+            if ($transfer) {
+                $key = 'transferredAway';
+            }
+            return [
+                $key => true,
+            ];
+        }
+        return $metaname->handle_fault($e, array(-4));
+    }
+}
+
+function metaname_TransferSync(array $params)
+{
+    return metaname_Sync($params, true);
+}
