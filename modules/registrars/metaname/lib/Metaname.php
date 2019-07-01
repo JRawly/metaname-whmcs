@@ -9,8 +9,6 @@ class Metaname
     private $identity;
     private $api_key;
 
-
-    #public function __construct($api_endpoint,$identity, $api_key)
     public function __construct(array $whmcs_params)
     {
         $this->whmcs_params = $whmcs_params;
@@ -24,11 +22,22 @@ class Metaname
         $this->api_key = $whmcs_params['APIKey'];
     }
 
-
     public function __call($name, $arguments)
     {
         $args = array_merge( array($this->identity, $this->api_key), $arguments);
-        return call_user_func_array(array($this->remote,$name), $args);
+        $response = call_user_func_array(array($this->remote,$name), $args);
+        logModuleCall(
+            'metaname',
+            $name,
+            $args,
+            $response,
+            '',
+            [
+                $this->identity,
+                $this->api_key,
+            ]
+        );
+        return $response;
     }
 
 
@@ -85,10 +94,7 @@ EOF;
     #
     public function domain_named($name, $domains)
     {
-        #$this->inspect( 'domain', $name );
         foreach ($domains as $domain) {
-            #$this->inspect( 'd', $domain );
-            #$this->inspect( 'n', $domain->name );
             if ($domain->name == $name) {
                 return $domain;
             }
