@@ -1,8 +1,8 @@
 <?php
 
-namespace WHMCS\Modules\Registrar\Metaname;
+namespace WHMCS\Module\Registrar\Metaname;
 
-use WHMCS\Modules\Registrar\Metaname\Exception\JsonRpcFault;
+use WHMCS\Module\Registrar\Metaname\Exception\JsonRpcFault;
 
 class JsonRpcClient
 {

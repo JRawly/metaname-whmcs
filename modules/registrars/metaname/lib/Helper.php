@@ -1,6 +1,6 @@
 <?php
 
-namespace WHMCS\Modules\Registrar\Metaname;
+namespace WHMCS\Module\Registrar\Metaname;
 
 class Helper {
     public static function str_rpartition($string, $delimiter)

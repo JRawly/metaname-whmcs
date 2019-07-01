@@ -1,7 +1,7 @@
 <?php
 
-use WHMCS\Modules\Registrar\Metaname\Metaname;
-use WHMCS\Modules\Registrar\Metaname\Exception\JsonRpcFault;
+use WHMCS\Module\Registrar\Metaname\Metaname;
+use WHMCS\Module\Registrar\Metaname\Exception\JsonRpcFault;
 
 function metaname_getConfigArray()
 {
